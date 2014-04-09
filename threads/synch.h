@@ -87,6 +87,9 @@ class Lock {
 
   private:
     const char* name;				// para depuraci�n
+    Semaphore sem;					// semáforo asociado
+    Thread* thname;					// thread q' hizo acquire
+    
     // a�adir aqu� otros campos que sean necesarios
 };
 
@@ -143,6 +146,8 @@ class Condition {
 
   private:
     const char* name;
+    const Lock* lock;
+    Semaphore *sem; 
     // aqu� se a�aden otros campos que sean necesarios
 };
 
