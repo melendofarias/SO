@@ -5,7 +5,7 @@
 # Whenever you add a .h or .cc file, put it in the appropriate 
 # _H,_C, or _O list.
 #
-# The dependency graph between assignments is:
+# The dependency graph between assignments is:hgh
 #   1. THREADS before everything else
 #   2. USERPROG must come before VM
 #   3. USERPROG can come before or after FILESYS, but if USERPROG comes 
