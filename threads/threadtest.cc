@@ -90,7 +90,7 @@ Consumidor()
 void
 Test_1(void* n)
 {
-	DEBUG('p', "Escritor, %d\n",n);	
+	DEBUG('p', "Escritor, %s\n",n);	
 	int k = 2 ;
 	Productor(k);
 	
@@ -98,7 +98,7 @@ Test_1(void* n)
 void 
 Test_2(void* name)
 {
-	DEBUG('p', "Lector, %d\n",name);
+	DEBUG('p', "Lector, %s\n",name);
 	Consumidor();
 }
 

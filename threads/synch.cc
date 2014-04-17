@@ -182,10 +182,8 @@ void Puerto::Send(int msg){
 	plock -> Acquire();
 	if (buffer != NULL){
 		//DEBUG('p', "esperando buffer vacio: \"%s\"\n", pname);
-		//pcondS-> Wait();
-		plock->Realise();
+		pcondS-> Wait();
 	}
-	plock -> Acquire();
 	DEBUG('p', "grabando buffer con: \"%i\"\n", msg);
 	buffer = &msg;
 	pcondR -> Signal();
@@ -194,7 +192,7 @@ void Puerto::Send(int msg){
 	
 void Puerto::Receive(){
 	plock -> Acquire();
-	while (buffer == NULL){
+	if (buffer == NULL){
 		DEBUG('p', "esperando buffer con datos: \"%s\"\n", pname);
 		pcondR-> Wait();
 	}
