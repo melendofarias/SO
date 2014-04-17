@@ -56,7 +56,8 @@
 
 // External functions used by this file
 
-void ThreadTest();
+//void ThreadTest();
+void PuertoTest();
 void Copy(const char *unixFile, const char *nachosFile);
 void Print(const char *file);
 void PerformanceTest(void);
@@ -88,7 +89,8 @@ main(int argc, char **argv)
     (void) Initialize(argc, argv);
     
 #ifdef THREADS
-    ThreadTest();
+    //ThreadTest();
+    PuertoTest();
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {

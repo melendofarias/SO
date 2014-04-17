@@ -1,0 +1,3 @@
+g++ -g -Wall -Wshadow -I../threads -I../machine -DTHREADS -DHOST_x86_64 -DHOST_LINUX -DCHANGED -c ../threads/main.cc
+g++ -g -Wall -Wshadow -I../threads -I../machine -DTHREADS -DHOST_x86_64 -DHOST_LINUX -DCHANGED -c ../threads/scheduler.cc
+g++ -g -Wall -Wshadow -I../threads -I../machine -DTHREADS -DHOST_x86_64 -DHOST_LINUX -DCHANGED -c ../threads/synch.cc

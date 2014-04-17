@@ -115,8 +115,8 @@ void Lock::Acquire() {
 	thname = currentThread;
 
 }
-bool isHeldByCurrentThread(){
-	return (currentThread == thname) ;
+bool Lock::isHeldByCurrentThread(){
+	return (thname == currentThread) ;
 }	
 	
 void Lock::Release() {
@@ -125,29 +125,94 @@ void Lock::Release() {
 			thname = NULL;
 	}
 }
-
+//Condition//
 Condition::Condition(const char* debugName, Lock* conditionLock) { 
 		name = debugName;
 		lock = conditionLock;
+		semList = new List<Semaphore*> ;
 }
 
 Condition::~Condition() { 
 		delete lock;
+		delete semList;
 }
 
 void Condition::Wait() { 
-	ASSERT(lock->isHeldByCurrentThread())
+	ASSERT(lock->isHeldByCurrentThread());
+	Semaphore * sem = new Semaphore(name, 1) ;
+	semList -> Append(sem);
+	lock -> Release();
+	sem -> P();
 	lock -> Acquire();	
 }
 
 void Condition::Signal() { 
-	ASSERT(lock->isHeldByCurrentThread())
-	lock -> Release();
+	ASSERT(lock->isHeldByCurrentThread());
+	Semaphore * sem;
+	if ( !(semList -> IsEmpty())){
+		sem = semList -> Remove(); 
+		sem -> V();
+	}
+	//lock -> Release();
 }
 
 void Condition::Broadcast() {
-	ASSERT(lock->isHeldByCurrentThread())
-	while (lock-
+	ASSERT(lock->isHeldByCurrentThread());
+	while ( !(semList -> IsEmpty()))
+		Signal();
 }
+
+//Puertos//
+Puerto::Puerto(const char * debugName){
+	buffer = NULL;
+	pname = debugName;
+	plock = new Lock(pname);
+	pcondS = new Condition(pname, plock);
+	pcondR = new Condition(pname, plock);
+	DEBUG('p', "Se crea el puerto: \"%s\"\n", pname);
+}
+
+Puerto::~Puerto(){
+	delete plock;
+	delete pcondS;
+	delete pcondR;
+}
+		
+void Puerto::Send(int msg){
+	plock -> Acquire();
+	if (buffer != NULL){
+		//DEBUG('p', "esperando buffer vacio: \"%s\"\n", pname);
+		//pcondS-> Wait();
+		plock->Realise();
+	}
+	plock -> Acquire();
+	DEBUG('p', "grabando buffer con: \"%i\"\n", msg);
+	buffer = &msg;
+	pcondR -> Signal();
+	plock -> Release();
+}
+	
+void Puerto::Receive(){
+	plock -> Acquire();
+	while (buffer == NULL){
+		DEBUG('p', "esperando buffer con datos: \"%s\"\n", pname);
+		pcondR-> Wait();
+	}
+	
+	DEBUG('p', "recibi el mensaje: \"%i\"\n", &buffer);
+	buffer = NULL;
+	pcondS-> Signal();
+	plock -> Release();
+}
+
+
+
+
+
+
+
+
+
+
 
 

@@ -14,6 +14,8 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "synch.h"
+
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -23,6 +25,9 @@
 //	"name" points to a string with a thread name, just for
 //      debugging purposes.
 //----------------------------------------------------------------------
+
+
+Puerto *puerto  = new Puerto("puerto"); 
 
 void
 SimpleThread(void* name)
@@ -65,4 +70,83 @@ ThreadTest()
     
     SimpleThread( (void*)"Hilo 0");
 }
+
+//----------------------------------------------------------------------
+// Funciones utilizadas para TestPuerto.
+//----------------------------------------------------------------------
+void
+Productor(int n)
+{
+	DEBUG('p',"enviando el numero: %d\n",n);
+	puerto->Send(n);
+}
+void
+Consumidor()
+{	DEBUG('p',"recibiendo \n");
+	puerto->Receive();
+	DEBUG('p',"SALI \n");
+	
+}
+void
+Test_1(void* n)
+{
+	DEBUG('p', "Escritor, %d\n",n);	
+	int k = 2 ;
+	Productor(k);
+	
+}
+void 
+Test_2(void* name)
+{
+	DEBUG('p', "Lector, %d\n",name);
+	Consumidor();
+}
+
+void
+PuertoTest()
+{
+	char * kc=  new char[100]; ;	
+	
+	DEBUG('p', "Prueba consumidor-Productor\n");
+	for(int k=0; k<5; k++)
+	{ 
+	 sprintf(kc, "escritor %d", k);
+	  Thread* newThread = new Thread ("Escritores");
+      newThread->Fork (Test_1, kc);	
+	}	
+	for(int k=0; k<5; k++)
+	{ sprintf(kc, "lector %d", k);
+	  Thread* newThread = new Thread ("Lectores");
+      newThread->Fork (Test_2, kc);	
+	}
+}
+
+void
+JoinTest(){
+
+}
+//--------------------------------------------------------
+//-----------Test Main------------------------------------
+//--------------------------------------------------------
+
+void 
+Test()
+{
+
+
+	printf("Test: t --> Thread\n");
+	printf("Test: p --> Puerto\n");
+	printf("Test: j --> Join\n");
+	printf("Ingrese test a realizar : ");
+	char test = getchar();
+	if (test == 't' )
+		ThreadTest();
+	else if (test == 'p')
+		PuertoTest();
+	else if (test == 'j')
+		JoinTest();
+
+}
+
+
 

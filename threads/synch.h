@@ -42,7 +42,7 @@ class Semaphore {
     // Constructor: da un valor inicial al sem�foro  
     Semaphore(const char* debugName, int initialValue);	// set initial value
     ~Semaphore();   					// destructor
-    const char* getName() { return name;}			// para depuraci�n
+    const char* getName() { return name;};			// para depuraci�n
 
     // Las �nicas operaciones p�blicas sobre el sem�foro
     // ambas deben ser *at�micas*
@@ -86,10 +86,9 @@ class Lock {
   bool isHeldByCurrentThread();	
 
   private:
-    const char* name;				// para depuraci�n
-    Semaphore sem;					// semáforo asociado
-    Thread* thname;					// thread q' hizo acquire
-    
+    Thread *thname;
+    const char* name;	
+    Semaphore *sem;		// para depuraci�n
     // a�adir aqu� otros campos que sean necesarios
 };
 
@@ -146,35 +145,23 @@ class Condition {
 
   private:
     const char* name;
-    const Lock* lock;
-    Semaphore *sem; 
+    Lock* lock;
+    List<Semaphore*> * semList; 
     // aqu� se a�aden otros campos que sean necesarios
 };
 
-/*
-
-C�digo original del Nachos para las variables condici�n - NO USAR
-  
-class Condition {
-  public:
-    Condition(char* debugName);		// initialize condition to 
-					// "no one waiting"
-    ~Condition();			// deallocate the condition
-    char* getName() { return (name); }
-    
-    void Wait(Lock *conditionLock); 	// these are the 3 operations on 
-					// condition variables; releasing the 
-					// lock and going to sleep are 
-					// *atomic* in Wait()
-    void Signal(Lock *conditionLock);   // conditionLock must be held by
-    void Broadcast(Lock *conditionLock);// the currentThread for all of 
-					// these operations
-
-  private:
-    char* name;
-    // plus some other stuff you'll need to define
+class Puerto {
+	public:
+		Puerto(const char * debugName);
+		~Puerto();
+		
+		void Send(int msg);
+		void Receive();
+	private:
+		const char * pname;
+		Lock * plock;
+		Condition * pcondS, *pcondR;
+		int * buffer;	
 };
-
-*/
 
 #endif // SYNCH_H
