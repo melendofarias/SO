@@ -139,7 +139,7 @@ Condition::~Condition() {
 
 void Condition::Wait() { 
 	ASSERT(lock->isHeldByCurrentThread());
-	Semaphore * sem = new Semaphore(name, 1) ;
+	Semaphore * sem = new Semaphore(name, 0) ;
 	semList -> Append(sem);
 	lock -> Release();
 	sem -> P();
@@ -164,7 +164,8 @@ void Condition::Broadcast() {
 
 //Puertos//
 Puerto::Puerto(const char * debugName){
-	buffer = NULL;
+	access = true;
+	
 	pname = debugName;
 	plock = new Lock(pname);
 	pcondS = new Condition(pname, plock);
@@ -180,25 +181,29 @@ Puerto::~Puerto(){
 		
 void Puerto::Send(int msg){
 	plock -> Acquire();
-	if (buffer != NULL){
-		//DEBUG('p', "esperando buffer vacio: \"%s\"\n", pname);
+	while (!access){
+		DEBUG('p', "esperando buffer vacio: \"%s\"\n", pname);
 		pcondS-> Wait();
 	}
 	DEBUG('p', "grabando buffer con: \"%i\"\n", msg);
-	buffer = &msg;
+	buffer = msg;
+	access = false;
 	pcondR -> Signal();
 	plock -> Release();
+	
 }
 	
 void Puerto::Receive(){
 	plock -> Acquire();
-	if (buffer == NULL){
+	int buf;
+	while (access){
 		DEBUG('p', "esperando buffer con datos: \"%s\"\n", pname);
 		pcondR-> Wait();
 	}
+	buf = buffer;
+	DEBUG('p', "recibi el mensaje: \"%i\"\n", buf);
 	
-	DEBUG('p', "recibi el mensaje: \"%i\"\n", &buffer);
-	buffer = NULL;
+	access = true;
 	pcondS-> Signal();
 	plock -> Release();
 }

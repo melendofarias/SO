@@ -161,7 +161,8 @@ class Puerto {
 		const char * pname;
 		Lock * plock;
 		Condition * pcondS, *pcondR;
-		int * buffer;	
+		int  buffer;	
+		bool access;
 };
 
 #endif // SYNCH_H

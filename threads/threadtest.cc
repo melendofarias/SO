@@ -90,34 +90,34 @@ Consumidor()
 void
 Test_1(void* n)
 {
-	DEBUG('p', "Escritor, %s\n",n);	
-	int k = 2 ;
-	Productor(k);
+	DEBUG('p', "Escritor, %d\n",n);	
+	//int k = 2 ;
+	Productor((int)(n+1));
 	
 }
 void 
 Test_2(void* name)
 {
-	DEBUG('p', "Lector, %s\n",name);
+	DEBUG('p', "Lector, %d\n",name);
 	Consumidor();
 }
 
 void
 PuertoTest()
 {
-	char * kc=  new char[100]; ;	
+		
 	
 	DEBUG('p', "Prueba consumidor-Productor\n");
 	for(int k=0; k<5; k++)
 	{ 
-	 sprintf(kc, "escritor %d", k);
+	 
 	  Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, kc);	
+      newThread->Fork (Test_1, (void *)k);	
 	}	
 	for(int k=0; k<5; k++)
-	{ sprintf(kc, "lector %d", k);
+	{ 
 	  Thread* newThread = new Thread ("Lectores");
-      newThread->Fork (Test_2, kc);	
+      newThread->Fork (Test_2, (void *)k);	
 	}
 }
 
