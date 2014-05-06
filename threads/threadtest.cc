@@ -65,7 +65,7 @@ ThreadTest()
       char* threadname = new char[100];
       sprintf(threadname, "Hilo %d", k);
       Thread* newThread = new Thread (threadname);
-      newThread->Fork (SimpleThread, (void*)threadname);
+      newThread->Fork (SimpleThread, (void*)threadname,1 );
     }
     
     SimpleThread( (void*)"Hilo 0");
@@ -91,8 +91,9 @@ void
 Test_1(void* n)
 {
 	DEBUG('p', "Escritor, %d\n",n);	
-	//int k = 2 ;
-	Productor((int)(n+1));
+	int k = 2 ;
+	//Productor((int)(n+1));
+	Productor(k);
 	
 }
 void 
@@ -112,12 +113,12 @@ PuertoTest()
 	{ 
 	 
 	  Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, (void *)k);	
+      newThread->Fork (Test_1, (void *)k, 1);	
 	}	
 	for(int k=0; k<5; k++)
 	{ 
 	  Thread* newThread = new Thread ("Lectores");
-      newThread->Fork (Test_2, (void *)k);	
+      newThread->Fork (Test_2, (void *)k,1);	
 	}
 }
 

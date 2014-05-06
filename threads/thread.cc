@@ -38,6 +38,7 @@ Thread::Thread(const char* threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    join= false;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -82,10 +83,11 @@ Thread::~Thread()
 // 	
 //	"func" is the procedure to run concurrently.
 //	"arg" is a single argument to be passed to the procedure.
+//  "join" indica si el proceso hace join(0 hace, 1 no hace)
 //----------------------------------------------------------------------
 
 void 
-Thread::Fork(VoidFunctionPtr func, void* arg)
+Thread::Fork(VoidFunctionPtr func, void* arg, int j)
 {
 #ifdef HOST_x86_64
     DEBUG('t', "Forking thread \"%s\" with func = 0x%lx, arg = %ld\n",
@@ -97,11 +99,17 @@ Thread::Fork(VoidFunctionPtr func, void* arg)
 #endif
 
     StackAllocate(func, arg);
-
+    
+    if (!j){
+		join= true;
+		portJoin = new Puerto(name);
+	}
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     scheduler->ReadyToRun(this);	// ReadyToRun assumes that interrupts 
 					// are disabled!
     interrupt->SetLevel(oldLevel);
+    
+    
 }    
 
 //----------------------------------------------------------------------
@@ -150,6 +158,8 @@ Thread::Finish ()
     ASSERT(this == currentThread);
     
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
+    
+    if (join) portJoin->Send(0);
     
     threadToBeDestroyed = currentThread;
     Sleep();					// invokes SWITCH
@@ -273,6 +283,13 @@ Thread::StackAllocate (VoidFunctionPtr func, void* arg)
     machineState[InitialPCState] = (HostMemoryAddress) func;
     machineState[InitialArgState] = (HostMemoryAddress) arg;
     machineState[WhenDonePCState] = (HostMemoryAddress) ThreadFinish;
+}
+
+void 
+Thread :: Join(){
+	if(join)
+		portJoin->Receive();
+			
 }
 
 #ifdef USER_PROGRAM

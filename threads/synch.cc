@@ -177,7 +177,7 @@ Puerto::~Puerto(){
 	delete plock;
 	delete pcondS;
 	delete pcondR;
-}
+}  
 		
 void Puerto::Send(int msg){
 	plock -> Acquire();

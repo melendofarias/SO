@@ -8,7 +8,7 @@
 # Also, you need to edit the Makefile in the bin subdirectory.
 
 # Linux i386 (default)
-# HOST = -DHOST_i386 -DHOST_LINUX
+#HOST = -DHOST_i386 -DHOST_LINUX
 #CPP=gcc
 
 # Linux x86_64

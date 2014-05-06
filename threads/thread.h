@@ -39,6 +39,7 @@
 
 #include "copyright.h"
 #include "utility.h"
+class Puerto;
 
 #ifdef USER_PROGRAM
 #include "machine.h"
@@ -85,8 +86,9 @@ class Thread {
 					// is called
 
     // basic thread operations
-
     void Fork(VoidFunctionPtr func, void* arg);	// Make thread run (*func)(arg)
+
+    void Fork(VoidFunctionPtr func, void* arg, int jn);	// Make thread run (*func)(arg)
     void Yield();  				// Relinquish the CPU if any 
 						// other thread is runnable
     void Sleep();  				// Put the thread to sleep and 
@@ -98,7 +100,8 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     const char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
-
+	void Join();
+  
   private:
     // some of the private data for this class is listed above
     
@@ -107,6 +110,11 @@ class Thread {
 					// (If NULL, don't deallocate stack)
     ThreadStatus status;		// ready, running or blocked
     const char* name;
+    
+    
+    bool join;				// indica si el thread espera muerte de hijo 
+	Puerto* portJoin;		// puntero al puerto del thread
+    
 
     void StackAllocate(VoidFunctionPtr func, void* arg);
     					// Allocate a stack for thread.
