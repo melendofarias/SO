@@ -88,7 +88,7 @@ class Thread {
     // basic thread operations
     void Fork(VoidFunctionPtr func, void* arg);	// Make thread run (*func)(arg)
 
-    void Fork(VoidFunctionPtr func, void* arg, int jn);	// Make thread run (*func)(arg)
+    void Fork(VoidFunctionPtr func, void* arg, int jn, int prt);	// Make thread run (*func)(arg)
     void Yield();  				// Relinquish the CPU if any 
 						// other thread is runnable
     void Sleep();  				// Put the thread to sleep and 
@@ -101,7 +101,11 @@ class Thread {
     const char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
 	void Join();
-  
+	
+	int getPriority() {return priority; } 
+	void setPriority(int i) {priority = i;}
+	
+	  
   private:
     // some of the private data for this class is listed above
     
@@ -113,6 +117,7 @@ class Thread {
     
     
     bool join;				// indica si el thread espera muerte de hijo 
+    int priority;			// indica la prioridad. 0 es la mayor	
 	Puerto* portJoin;		// puntero al puerto del thread
     
 

@@ -29,7 +29,12 @@
 
 Scheduler::Scheduler()
 { 
-    readyList = new List<Thread*>; 
+	int i ;
+	//List<Thread*> ArregloreadyListP[3];
+	for ( i = 0; i < 3 ; i++){ 								//cambiar 3 por readyListP.size()
+		(*readyListP[i]) = new List<Thread*>; 
+	}
+	//*readyListP = ArregloreadyListP; 
 } 
 
 //----------------------------------------------------------------------
@@ -39,7 +44,7 @@ Scheduler::Scheduler()
 
 Scheduler::~Scheduler()
 { 
-    delete readyList; 
+    delete *readyListP; 
 } 
 
 //----------------------------------------------------------------------
@@ -56,7 +61,7 @@ Scheduler::ReadyToRun (Thread *thread)
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    readyList->Append(thread);
+    (*readyListP[thread->getPriority()])->Append(thread);
 }
 
 //----------------------------------------------------------------------
@@ -70,7 +75,12 @@ Scheduler::ReadyToRun (Thread *thread)
 Thread *
 Scheduler::FindNextToRun ()
 {
-    return readyList->Remove();
+	int p = 0;
+	while (p < 3 and (*readyListP[p])->IsEmpty())		//Cambiar 3 por Length de readyListP
+	     p++;
+	printf("%d\n",p);
+			
+    return (*readyListP[p])->Remove();
 }
 
 //----------------------------------------------------------------------
@@ -148,6 +158,10 @@ ThreadPrint (Thread* t) {
 void
 Scheduler::Print()
 {
-    printf("Ready list contents:\n");
-    readyList->Apply(ThreadPrint);
+	int i ;
+	for ( i = 0; i < 3 ; i++){ 				//Cambiar 3 por Length de readyListP
+		printf("priority %d - Ready list contents:\n",  i);
+		(*readyListP[i])->Apply(ThreadPrint);
+	}
+	
 }

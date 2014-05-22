@@ -39,6 +39,7 @@ Thread::Thread(const char* threadName)
     stack = NULL;
     status = JUST_CREATED;
     join= false;
+    priority = 0;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -87,7 +88,7 @@ Thread::~Thread()
 //----------------------------------------------------------------------
 
 void 
-Thread::Fork(VoidFunctionPtr func, void* arg, int j)
+Thread::Fork(VoidFunctionPtr func, void* arg, int j, int p)
 {
 #ifdef HOST_x86_64
     DEBUG('t', "Forking thread \"%s\" with func = 0x%lx, arg = %ld\n",
@@ -104,6 +105,9 @@ Thread::Fork(VoidFunctionPtr func, void* arg, int j)
 		join= true;
 		portJoin = new Puerto(name);
 	}
+	
+	priority = p;
+	
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     scheduler->ReadyToRun(this);	// ReadyToRun assumes that interrupts 
 					// are disabled!
