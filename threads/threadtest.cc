@@ -28,6 +28,7 @@
 
 
 Puerto *puerto  = new Puerto("puerto"); 
+Semaphore *semap = new Semaphore("semaforo_test",1);
 
 void
 SimpleThread(void* name)
@@ -109,22 +110,41 @@ PuertoTest()
 		
 	
 	DEBUG('p', "Prueba consumidor-Productor\n");
-	for(int k=0; k<5; k++)
+	for(int k=0; k<3; k++)
 	{ 
 	 
 	  Thread* newThread = new Thread ("Escritores");
       newThread->Fork (Test_1, (void *)k, 1,0);	
 	}	
-	for(int k=0; k<5; k++)
+	for(int k=0; k<4; k++)
 	{ 
 	  Thread* newThread = new Thread ("Lectores");
-      newThread->Fork (Test_2, (void *)k,1, 0);	
+      newThread->Fork (Test_2, (void *)k,1, 1);	
 	}
+	Thread* newThread = new Thread ("Escritores");
+      newThread->Fork (Test_1, (void *)4, 1,2);	
+}
+
+
+void
+Caso1(void *n){
+	DEBUG('w',"Caso 1 en V() \n");
+	semap->V();
+	
+}
+void
+Caso2(void *n){
+	DEBUG('w',"Caso 2 en P() \n");
+	semap->P();
+
 }
 
 void
 JoinTest(){
-
+	Thread* newThread_1 = new Thread ("P");
+      newThread_1->Fork (Caso1, (void *)3, 1,2);	
+	Thread* newThread = new Thread ("p");
+      newThread->Fork (Caso2, (void *)4, 1,0);	
 }
 //--------------------------------------------------------
 //-----------Test Main------------------------------------

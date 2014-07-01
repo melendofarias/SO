@@ -238,8 +238,9 @@ Thread::Sleep ()
     status = BLOCKED;
     while ((nextThread = scheduler->FindNextToRun()) == NULL) {
 	interrupt->Idle();	// no one to run, wait for an interrupt
+	DEBUG('t',"Estoy en While\n");
     }
-        
+    DEBUG('t',"Sali del While\n");    
     scheduler->Run(nextThread); // returns when we've been signalled
 }
 

@@ -30,9 +30,11 @@
 Scheduler::Scheduler()
 { 
 	int i ;
+	MaxPriority = 3;
 	//List<Thread*> ArregloreadyListP[3];
-	for ( i = 0; i < 3 ; i++){ 								//cambiar 3 por readyListP.size()
-		(*readyListP[i]) = new List<Thread*>; 
+	readyListP = new List<Thread*>*[MaxPriority];
+	for ( i = 0; i < MaxPriority ; i++){ 								//cambiar 3 por readyListP.size()
+		readyListP[i] = new List<Thread*>; 
 	}
 	//*readyListP = ArregloreadyListP; 
 } 
@@ -61,7 +63,7 @@ Scheduler::ReadyToRun (Thread *thread)
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    (*readyListP[thread->getPriority()])->Append(thread);
+    readyListP[thread->getPriority()]->Append(thread);
 }
 
 //----------------------------------------------------------------------
@@ -76,11 +78,14 @@ Thread *
 Scheduler::FindNextToRun ()
 {
 	int p = 0;
-	while (p < 3 and (*readyListP[p])->IsEmpty())		//Cambiar 3 por Length de readyListP
+	while (p < MaxPriority && readyListP[p]->IsEmpty())		//Cambiar 3 por Length de readyListP
 	     p++;
-	printf("%d\n",p);
-			
-    return (*readyListP[p])->Remove();
+	
+	printf("Next to run %d\n",p);
+	if(p == MaxPriority)
+		return NULL;
+	else		
+    	return readyListP[p]->Remove();
 }
 
 //----------------------------------------------------------------------
@@ -159,9 +164,9 @@ void
 Scheduler::Print()
 {
 	int i ;
-	for ( i = 0; i < 3 ; i++){ 				//Cambiar 3 por Length de readyListP
+	for ( i = 0; i < MaxPriority ; i++){ 				//Cambiar 3 por Length de readyListP
 		printf("priority %d - Ready list contents:\n",  i);
-		(*readyListP[i])->Apply(ThreadPrint);
+		(readyListP[i])->Apply(ThreadPrint);
 	}
 	
 }
