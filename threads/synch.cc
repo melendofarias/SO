@@ -111,9 +111,25 @@ Lock::~Lock() {
 }
 
 void Lock::Acquire() {
-	sem -> P();
-	thname = currentThread;
-
+	int p1;
+	if(!isHeldByCurrentThread())
+	{
+		if(thname != NULL)
+		{
+			Prioritymax = thname->getPriority();
+			p1 = currentThread->getPriority();
+			DEBUG('p', "Prioridades ,%d, %d \n", p1, Prioritymax);
+			if(Prioritymax < p1) 
+			{
+				thname->setPriority(p1);
+				scheduler->ChangeQueuePriority(thname,p1);
+				Prioritymax = p1;
+			}
+		}	
+		DEBUG('p', "Prioridades  \n");
+		sem -> P();
+		thname = currentThread;
+	}
 }
 bool Lock::isHeldByCurrentThread(){
 	return (thname == currentThread) ;

@@ -170,3 +170,31 @@ Scheduler::Print()
 	}
 	
 }
+void 
+Scheduler:: ChangeQueuePriority(Thread *th, int priority)
+{
+ 	int i = th->getPriority();
+	Thread *thread1;
+	Thread *threadh;
+	threadh = (readyListP[i])->Remove();
+	
+	if(threadh == th)
+	{
+		 DEBUG('c', "Soy la cabeza ,%d, %d \n", i, priority);
+		readyListP[priority]->Prepend(th);
+	}
+	else
+		{
+			readyListP[i]->Append(threadh);
+			while((thread1 = readyListP[i]->Remove())!= threadh)
+			{
+				if(thread1 == th)
+				{	DEBUG('c', "No soy la cabeza ,%d, %d \n", i, priority);
+					readyListP[priority]->Prepend(th);
+				}
+				else
+				 	readyListP[i]->Append(thread1);
+			}
+		
+	}
+}

@@ -86,6 +86,7 @@ class Lock {
   bool isHeldByCurrentThread();	
 
   private:
+  	int Prioritymax;
     Thread *thname;
     const char* name;	
     Semaphore *sem;		// para depuraci�n

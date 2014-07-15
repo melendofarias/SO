@@ -80,21 +80,22 @@ Productor(int n)
 {
 	DEBUG('p',"enviando el numero: %d\n",n);
 	puerto->Send(n);
+	DEBUG('p',"SALI Escritor: %d\n",n);
 }
 void
 Consumidor()
 {	DEBUG('p',"recibiendo \n");
 	puerto->Receive();
-	DEBUG('p',"SALI \n");
+	DEBUG('p',"SALI Lector\n");
 	
 }
 void
 Test_1(void* n)
 {
 	DEBUG('p', "Escritor, %d\n",n);	
-	int k = 2 ;
+	//int k = 2 ;
 	//Productor((int)(n+1));
-	Productor(k);
+	Productor((int )n);
 	
 }
 void 

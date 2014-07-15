@@ -27,6 +27,10 @@ class Scheduler {
 					// list, if any, and return thread.
     void Run(Thread* nextThread);	// Cause nextThread to start running
     void Print();			// Print contents of ready list
+    // Intercambio de Cola de Prioridad
+    void ChangeQueuePriority(Thread *th, int priority);
+    
+    
     
   private:
     List<Thread*> **readyListP; 	// Priority queue of threads that are ready to run,
