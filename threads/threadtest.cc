@@ -29,6 +29,7 @@
 
 Puerto *puerto  = new Puerto("puerto"); 
 Semaphore *semap = new Semaphore("semaforo_test",1);
+Lock * lock = new Lock("LOOK");
 
 void
 SimpleThread(void* name)
@@ -143,14 +144,43 @@ Caso2(void *n){
 void
 JoinTest(){
 	Thread* newThread_1 = new Thread ("P");
-      newThread_1->Fork (Caso1, (void *)3, 1,2);	
+      newThread_1->Fork (Caso1, (void *)3, 1,0);	
 	Thread* newThread = new Thread ("p");
-      newThread->Fork (Caso2, (void *)4, 1,0);	
+      newThread->Fork (Caso2, (void *)4, 1,2);	
+}
+
+void
+lock1(void *n){
+	DEBUG('p',"Caso 1 en Acquire \n");
+	lock->Acquire();
+	currentThread->Yield();
+	lock->Release();	
+}
+void
+lock2(void *n){
+	DEBUG('p',"Caso 2 en Release \n");
+	lock->Acquire();
+	Thread* newThread_2 = new Thread ("Toma 2 El LOCK");
+	newThread_2 -> Fork(lock1, (void *)1,1,0);
+}
+
+void
+Priotest(){
+	Thread* newThread = new Thread ("Toma El LOCK");
+	newThread -> Fork(lock1, (void *)1,1,2);
+	
+	Thread* newThread_1 = new Thread ("Toma El LOCK----2");
+	newThread_1 -> Fork(lock2, (void *)1,1,1);
+	
+	
+	
+	/*Thread* newThread_2 = new Thread ("Release");
+	newThread_2 -> Fork(lock2, (void *)2, 1,0);*/
+	
 }
 //--------------------------------------------------------
 //-----------Test Main------------------------------------
 //--------------------------------------------------------
-
 void 
 Test()
 {
@@ -167,6 +197,8 @@ Test()
 		PuertoTest();
 	else if (test == 'j')
 		JoinTest();
+	else
+		Priotest();
 
 }
 
