@@ -103,7 +103,10 @@ Semaphore::V()
 Lock::Lock(const char* debugName) {
 	name = debugName;
 	sem = new Semaphore(name, 1);	
+	semInvP = new Semaphore("AccCambioPrio",1);
 	thname = NULL;
+	
+
 }
 
 Lock::~Lock() {
@@ -111,34 +114,44 @@ Lock::~Lock() {
 }
 
 void Lock::Acquire() {
-	int p1;
+	//control->P();
+	int pcurrent;
 	if(!isHeldByCurrentThread())
-	{
+	{	semInvP -> P();
 		if(thname != NULL)
 		{
 			Prioritymax = thname->getPriority();
-			p1 = currentThread->getPriority();
-			DEBUG('p', "Prioridades ,%d, %d \n", p1, Prioritymax);
-			if(Prioritymax < p1) 
+			pcurrent = currentThread->getPriority();
+			DEBUG('p', "Prioridades ,%d, %d \n", pcurrent, Prioritymax);
+			if(Prioritymax < pcurrent) 
 			{
-				thname->setPriority(p1);
-				scheduler->ChangeQueuePriority(thname,p1);
-				Prioritymax = p1;
+				DEBUG('p', "Prioridades ,%s, %d \n",thname->getName(), pcurrent);
+				
+				scheduler->ChangeQueuePriority(thname,pcurrent);
+				thname->setPriority(pcurrent);
+				Prioritymax = pcurrent;
 			}
 		}	
+		//thname = currentThread;
+		semInvP -> V();
+		
 		DEBUG('p', "Prioridades  \n");
 		sem -> P();
+		DEBUG('p', "Sale de P \n");
 		thname = currentThread;
 	}
+	else
+	DEBUG('p', "No pude hacer Acquire  \n");
 }
 bool Lock::isHeldByCurrentThread(){
-	return (thname == currentThread) ;
+	return (thname == currentThread);
 }	
 	
 void Lock::Release() {
+	ASSERT(thname == currentThread);
 	if (isHeldByCurrentThread()){
-			sem -> V();
-			thname = NULL;
+		thname = NULL;
+		sem -> V();
 	}
 }
 //Condition//
@@ -155,7 +168,7 @@ Condition::~Condition() {
 
 void Condition::Wait() { 
 	ASSERT(lock->isHeldByCurrentThread());
-	Semaphore * sem = new Semaphore(name, 0) ;
+	Semaphore * sem = new Semaphore(name, 1) ;
 	semList -> Append(sem);
 	lock -> Release();
 	sem -> P();

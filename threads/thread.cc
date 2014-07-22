@@ -106,7 +106,7 @@ Thread::Fork(VoidFunctionPtr func, void* arg, int j, int p)
 		portJoin = new Puerto(name);
 	}
 	
-	priority = p;
+	(this)->setPriority(p);
 	
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     scheduler->ReadyToRun(this);	// ReadyToRun assumes that interrupts 
@@ -203,6 +203,7 @@ Thread::Yield ()
 	scheduler->ReadyToRun(this);
 	scheduler->Run(nextThread);
     }
+    DEBUG('t', "Sali del if\n");
     interrupt->SetLevel(oldLevel);
 }
 

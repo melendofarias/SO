@@ -63,7 +63,9 @@ Scheduler::ReadyToRun (Thread *thread)
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    readyListP[thread->getPriority()]->Append(thread);
+    int pi = thread->getPriority();
+    DEBUG('t', "priority,%d\n",pi);
+    readyListP[pi]->Append(thread);
 }
 
 //----------------------------------------------------------------------
@@ -75,17 +77,25 @@ Scheduler::ReadyToRun (Thread *thread)
 //----------------------------------------------------------------------
 
 Thread *
-Scheduler::FindNextToRun ()
+Scheduler::FindNextToRun()
 {
-	int p = 0;
-	while (p < MaxPriority && readyListP[p]->IsEmpty())		//Cambiar 3 por Length de readyListP
-	     p++;
+	DEBUG('t', "next to run \n");
+	int p = MaxPriority-1;
+	DEBUG('t', "Priodidad maxima, %d \n", p);
+	while (p > 0 && (readyListP[p])->IsEmpty()){		//Cambiar 3 por Length de readyListP
+	     p--;
 	
+	DEBUG('t', "while \n");
+	}
 	printf("Next to run %d\n",p);
-	if(p == MaxPriority)
+/*	if(p == 0)
+	{
+		DEBUG('t', "p == 0 \n");
 		return NULL;
-	else		
+	}
+	else*/		
     	return readyListP[p]->Remove();
+
 }
 
 //----------------------------------------------------------------------
@@ -165,22 +175,27 @@ Scheduler::Print()
 {
 	int i ;
 	for ( i = 0; i < MaxPriority ; i++){ 				//Cambiar 3 por Length de readyListP
-		printf("priority %d - Ready list contents:\n",  i);
+		printf("\nPRIORITY%d - Ready list contents:\n",  i);
 		(readyListP[i])->Apply(ThreadPrint);
 	}
 	
 }
 void 
 Scheduler:: ChangeQueuePriority(Thread *th, int priority)
-{
+{	
+	DEBUG('p',"Estre a change \n");
  	int i = th->getPriority();
+ 	DEBUG('p',"Prioridad del thread, %d \n", i);
+ 	DEBUG('p',"Nueva prioridad del thread, %d \n", priority);
+	DEBUG('p',"Antes de CAMBIAR \n");
+	Print();
 	Thread *thread1;
 	Thread *threadh;
 	threadh = (readyListP[i])->Remove();
-	
+	DEBUG('p',"Nombre: %s \n",threadh->getName());	
 	if(threadh == th)
 	{
-		 DEBUG('c', "Soy la cabeza ,%d, %d \n", i, priority);
+		 DEBUG('p', "Soy la cabeza ,%d, %d \n", i, priority);
 		readyListP[priority]->Prepend(th);
 	}
 	else
@@ -189,7 +204,7 @@ Scheduler:: ChangeQueuePriority(Thread *th, int priority)
 			while((thread1 = readyListP[i]->Remove())!= threadh)
 			{
 				if(thread1 == th)
-				{	DEBUG('c', "No soy la cabeza ,%d, %d \n", i, priority);
+				{	DEBUG('p', "No soy la cabeza ,%d, %d \n", i, priority);
 					readyListP[priority]->Prepend(th);
 				}
 				else
@@ -197,4 +212,7 @@ Scheduler:: ChangeQueuePriority(Thread *th, int priority)
 			}
 		
 	}
+	DEBUG('p',"Despues de CAMBIAR \n");
+	Print();
+
 }

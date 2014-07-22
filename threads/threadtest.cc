@@ -67,9 +67,9 @@ ThreadTest()
       char* threadname = new char[100];
       sprintf(threadname, "Hilo %d", k);
       Thread* newThread = new Thread (threadname);
-      newThread->Fork (SimpleThread, (void*)threadname, 1, 0 );
+      newThread->Fork (SimpleThread, (void*)threadname, 1, 2 );
     }
-    
+    DEBUG('t', "sali del for\n");
     SimpleThread( (void*)"Hilo 0");
 }
 
@@ -116,15 +116,18 @@ PuertoTest()
 	{ 
 	 
 	  Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, (void *)k, 1,0);	
+      newThread->Fork (Test_1, (void *)k, 1,1);	
 	}	
+	Thread* newThread = new Thread ("Escritores");
+      newThread->Fork (Test_1, (void *)4, 1,2);	
+	
 	for(int k=0; k<4; k++)
 	{ 
 	  Thread* newThread = new Thread ("Lectores");
       newThread->Fork (Test_2, (void *)k,1, 1);	
 	}
-	Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, (void *)4, 1,2);	
+	//Thread* newThread = new Thread ("Escritores");
+     // newThread->Fork (Test_1, (void *)4, 1,2);	
 }
 
 
@@ -147,29 +150,40 @@ JoinTest(){
       newThread_1->Fork (Caso1, (void *)3, 1,0);	
 	Thread* newThread = new Thread ("p");
       newThread->Fork (Caso2, (void *)4, 1,2);	
-}
 
+}
 void
 lock1(void *n){
 	DEBUG('p',"Caso 1 en Acquire \n");
 	lock->Acquire();
 	currentThread->Yield();
-	lock->Release();	
+	
+	lock->Release();
+	DEBUG('p',"Termine en Caso 1 \n");	
 }
 void
 lock2(void *n){
 	DEBUG('p',"Caso 2 en Release \n");
-	lock->Acquire();
-	Thread* newThread_2 = new Thread ("Toma 2 El LOCK");
-	newThread_2 -> Fork(lock1, (void *)1,1,0);
+	
+	Thread* newThread_11 = new Thread ("thread hijo 1 prio 1");
+	newThread_11 -> Fork(lock1, (void *)1,1,1);
+	
+	lock->Acquire(); 
+	
+	Thread* newThread_12 = new Thread ("thread hijo 2 prio 2");
+	newThread_12 -> Fork(lock1, (void *)1,1,2);
+	
+	Thread* newThread_13 = new Thread ("thread hijo 3 prio 1");
+	newThread_13 -> Fork(lock1, (void *)1,1,1);
+
 }
 
 void
 Priotest(){
-	Thread* newThread = new Thread ("Toma El LOCK");
-	newThread -> Fork(lock1, (void *)1,1,2);
+	Thread* newThread = new Thread ("Thread 1 Prioridad 1");
+	newThread -> Fork(lock1, (void *)1,1,1);
 	
-	Thread* newThread_1 = new Thread ("Toma El LOCK----2");
+	Thread* newThread_1 = new Thread ("Thread 2 Prioridad 1");
 	newThread_1 -> Fork(lock2, (void *)1,1,1);
 	
 	

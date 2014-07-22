@@ -90,6 +90,7 @@ class Lock {
     Thread *thname;
     const char* name;	
     Semaphore *sem;		// para depuraci�n
+	Semaphore *semInvP; //Semaforo para control de prioridades
     // a�adir aqu� otros campos que sean necesarios
 };
 
