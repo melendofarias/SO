@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "user.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -53,11 +54,30 @@ ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
 
-    if ((which == SyscallException) && (type == SC_Halt)) {
-	DEBUG('a', "Shutdown, initiated by user program.\n");
-   	interrupt->Halt();
-    } else {
-	printf("Unexpected user mode exception %d %d\n", which, type);
-	ASSERT(false);
+    if (which == SyscallException){
+		switch (type) {
+			case SC_Halt: {
+				DEBUG('a', "Shutdown, initiated by user program.\n");
+				interrupt->Halt();
+				break;
+			}
+			case SC_Create: {
+				int addr_name = machine->ReadRegister(4);
+				char name[64];
+				readStrFromUsr(addr_name, name);
+				if (fileSystem->Create(name, 1024)){
+					DEBUG('a', "Create, initiated by user program.\n");
+				}
+				else {
+					DEBUG('a', "Create, an error ocurred.\n");
+				} 
+				machine->WriteRegister(2,0);
+				break;
+			}	 
+		}	
+	}
+    else {
+		printf("Unexpected user mode exception %d %d\n", which, type);
+		ASSERT(false);
     }
 }
