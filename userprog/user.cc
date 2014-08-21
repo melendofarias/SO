@@ -10,12 +10,13 @@ readStrFromUsr(int usrAddr, char *outStr){
 
 	machine->ReadMem( usrAddr, size, &value);
     while((char)value != '\0'){
-		outStr[i] = (char)value;    DEBUG('q', "leiiii %c\n",  (char)value);
+		outStr[i] = (char)value;    
+		DEBUG('q', "leiiii %c\n",  (char)value);
 
 		i++; 
 		machine->ReadMem( usrAddr+i, size, &value);
     }
-    
+    outStr[i]='\0';
 }
 
 void

@@ -25,6 +25,8 @@
 #include "system.h"
 #include "syscall.h"
 #include "user.h"
+#include <stdio.h>
+//#include "SynchConsole.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -48,7 +50,20 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
+void increaseProgramCounter() {
+	/*
+	machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg)); // Previous program counter (for debugging)
+	machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg) );  //Current program counter
+	machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) +4); //Next program counter (for branch delay) 
+	*/
+	int pc = machine->ReadRegister(PCReg);
+	machine->WriteRegister(PrevPCReg, pc);
+	pc = machine->ReadRegister(NextPCReg);
+	machine->WriteRegister(PCReg, pc);
+	pc+=4;
+	machine->WriteRegister(NextPCReg, pc);
 
+}
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -66,18 +81,79 @@ ExceptionHandler(ExceptionType which)
 				char name[64];
 				readStrFromUsr(addr_name, name);
 				if (fileSystem->Create(name, 1024)){
-					DEBUG('a', "Create, initiated by user program.\n");
+					DEBUG('o', "Create, initiated by user program.\n");
 				}
 				else {
-					DEBUG('a', "Create, an error ocurred.\n");
+					DEBUG('o', "Create, an error ocurred.\n");
 				} 
 				machine->WriteRegister(2,0);
+				
 				break;
-			}	 
+			}
+			case SC_Read: {
+				int addr_buff = machine->ReadRegister(4);
+				int lon = machine->ReadRegister(5);
+				OpenFileId id = machine->ReadRegister(6);
+				int bytes=0;
+				char *buffer;
+				buffer = (char *)malloc(lon * sizeof (char));
+						
+				int i = 0;
+				if(id == ConsoleInput)
+				{
+					DEBUG('o', "READING, initiated by user program.\n");
+					for(i; i < lon; i++)
+					{
+						buffer[i] = sconsole->readConsole();
+						
+						if(buffer[i] == '\n')	
+							break;
+						bytes++;
+					}
+					DEBUG('o', "Bytes leidos: %d\n", bytes);
+					writeBuffToUsr(buffer,addr_buff, bytes);
+					
+				}
+				else{break;}
+				machine->WriteRegister(2,bytes);				
+				delete buffer;
+				break;
+			}
+			case SC_Write: {
+					int addr_buff = machine->ReadRegister(4);
+					int lon = machine->ReadRegister(5);
+					OpenFileId id = machine->ReadRegister(6);
+					
+					int bytes=0;
+					char *buffer;
+					buffer = (char *)malloc(lon * sizeof (char));						
+					int i = 0;
+					if(id == ConsoleOutput)
+					{
+						DEBUG('o', "Writing, initiated by user program.\n");
+						readBuffFromUsr(addr_buff, buffer, lon);
+						
+						for(i; i < lon; i++)
+						{
+							sconsole->writeConsole(buffer[i]);							
+							bytes++;
+						}
+					DEBUG('o', "Bytes escritos: %d\n", bytes);
+					
+					
+					}
+					else{break;}
+					machine->WriteRegister(2,bytes);				
+					delete buffer;
+					break;
+			}		 
 		}	
 	}
     else {
 		printf("Unexpected user mode exception %d %d\n", which, type);
 		ASSERT(false);
     }
+    increaseProgramCounter();
 }
+
+

@@ -87,7 +87,7 @@ Scheduler::FindNextToRun()
 	
 	DEBUG('t', "while \n");
 	}
-	printf("Next to run %d\n",p);
+	//printf("Next to run %d\n",p);
 /*	if(p == 0)
 	{
 		DEBUG('t', "p == 0 \n");
