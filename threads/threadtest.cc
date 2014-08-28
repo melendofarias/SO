@@ -94,9 +94,10 @@ void
 Test_1(void* n)
 {
 	DEBUG('p', "Escritor, %d\n",n);	
-	//int k = 2 ;
+	int  k=2;
+	
 	//Productor((int)(n+1));
-	Productor((int )n);
+	Productor((int )k);
 	
 }
 void 
@@ -110,21 +111,22 @@ void
 PuertoTest()
 {
 		
-	
+	int * i;
 	DEBUG('p', "Prueba consumidor-Productor\n");
 	for(int k=0; k<3; k++)
 	{ 
-	 
+	  *i = k;
 	  Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, (void *)k, 1,1);	
-	}	
-	Thread* newThread = new Thread ("Escritores");
-      newThread->Fork (Test_1, (void *)4, 1,2);	
+      newThread->Fork (Test_1, (void *)i, 1,1);	
+	}
+		
+	Thread* newThread1 = new Thread ("Escritores");
+      newThread1->Fork (Test_1, (void *)4, 1,2);	
 	
 	for(int k=0; k<4; k++)
-	{ 
-	  Thread* newThread = new Thread ("Lectores");
-      newThread->Fork (Test_2, (void *)k,1, 1);	
+	{ *i = k;
+	  Thread* newThread2 = new Thread ("Lectores");
+      newThread2->Fork (Test_2, (void *)i,1, 1);	
 	}
 	//Thread* newThread = new Thread ("Escritores");
      // newThread->Fork (Test_1, (void *)4, 1,2);	

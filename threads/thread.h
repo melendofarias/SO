@@ -44,6 +44,7 @@ class Puerto;
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
+#include "list.h"
 #endif
 
 // CPU register state to be saved on context switch.  
@@ -104,7 +105,7 @@ class Thread {
 	
 	int getPriority() {return priority; } 
 	void setPriority(int i) {priority = i;}
-	
+	List<OpenFile*> *descriptores;	 //lista de archivos abiertos y sus descriptores
 	  
   private:
     // some of the private data for this class is listed above

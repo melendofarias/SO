@@ -40,6 +40,7 @@ Thread::Thread(const char* threadName)
     status = JUST_CREATED;
     join= false;
     priority = 0;
+    descriptores = new List<OpenFile*>;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -60,7 +61,8 @@ Thread::Thread(const char* threadName)
 Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
-
+	delete descriptores;
+	
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(HostMemoryAddress));

@@ -64,6 +64,33 @@ void increaseProgramCounter() {
 	machine->WriteRegister(NextPCReg, pc);
 
 }
+
+
+OpenFileId
+AssignId(OpenFile* file){
+	int i =	 3;
+	OpenFile * fileTemp;
+	List<OpenFile*> *tempList = new List<OpenFile*>;
+	
+	if(currentThread->descriptores->IsEmpty())
+		DEBUG('o', "Lista VAcia %s \n", currentThread->getName());
+		
+	currentThread->descriptores->Append(file);
+		
+	while ((fileTemp = currentThread->descriptores->Remove()) != file){
+		tempList->Append(fileTemp);
+		i++;
+	}
+	tempList->Append(fileTemp);
+
+	//vuelvo a llenar la lista de descriptores
+	while(!tempList->IsEmpty()){
+		fileTemp = tempList->Remove();
+		currentThread->descriptores->Append(fileTemp);
+	}
+	return i;
+}
+
 void
 ExceptionHandler(ExceptionType which)
 {
@@ -102,7 +129,7 @@ ExceptionHandler(ExceptionType which)
 				if(id == ConsoleInput)
 				{
 					DEBUG('o', "READING, initiated by user program.\n");
-					for(i; i < lon; i++)
+					for(i=0; i < lon; i++)
 					{
 						buffer[i] = sconsole->readConsole();
 						
@@ -133,7 +160,7 @@ ExceptionHandler(ExceptionType which)
 						DEBUG('o', "Writing, initiated by user program.\n");
 						readBuffFromUsr(addr_buff, buffer, lon);
 						
-						for(i; i < lon; i++)
+						for(i=0; i < lon; i++)
 						{
 							sconsole->writeConsole(buffer[i]);							
 							bytes++;
@@ -146,6 +173,24 @@ ExceptionHandler(ExceptionType which)
 					machine->WriteRegister(2,bytes);				
 					delete buffer;
 					break;
+			}
+			case SC_Open: {
+				int addr_name = machine->ReadRegister(4);
+				char name[64];
+				readStrFromUsr(addr_name, name);
+				OpenFileId id ;
+				OpenFile* file = fileSystem->Open(name); 
+				if (file){
+					DEBUG('o', "Open, initiated by user program.\n");
+				}
+				else {
+					DEBUG('o', "Open, an error ocurred.\n");
+				} 
+				id = AssignId(file); 
+				DEBUG('o', "Open, OpenFileId: %d\n", id);
+				machine->WriteRegister(2,0);
+				
+				break;
 			}		 
 		}	
 	}

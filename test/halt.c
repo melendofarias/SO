@@ -15,10 +15,16 @@
 int
 main()
 {
-	char *buff;
-	Read(buff,5, 0);
+	//char *buff;
+	//Read(buff,5, 0);
 	
-	//Create("TTTT");
+	Create("TTTT");
+	Open("TTTT");
+	Create("TTTT1");
+	Open("TTTT1");
+	
+	Create("TTTT2");
+	Open("TTTT2");
 	return 0;
 	//Halt();
     /* not reached */
