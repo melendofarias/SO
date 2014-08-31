@@ -18,13 +18,22 @@ main()
 	//char *buff;
 	//Read(buff,5, 0);
 	
-	Create("TTTT");
-	Open("TTTT");
-	Create("TTTT1");
-	Open("TTTT1");
+	Create("file0");
+	int id0 = Open("file0");
 	
-	Create("TTTT2");
-	Open("TTTT2");
+	Create("file1");
+	int id1 = Open("file1");
+	
+	Close(id0);
+
+	Create("file2");
+	int id2 = Open("file2");
+
+        int idNOexiste = 9;
+        Close(idNOexiste); 
+        Close(id1);
+        Close(id2);
+
 	return 0;
 	//Halt();
     /* not reached */

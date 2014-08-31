@@ -65,31 +65,19 @@ void increaseProgramCounter() {
 
 }
 
-
+/* AssingId toma un puntero a un archivo abierto OpenFile
+ * y retorna un id unico por thread para el mismo (openfileId)
+ */
 OpenFileId
 AssignId(OpenFile* file){
-	int i =	 3;
-	OpenFile * fileTemp;
-	List<OpenFile*> *tempList = new List<OpenFile*>;
-	
-	if(currentThread->descriptores->IsEmpty())
-		DEBUG('o', "Lista VAcia %s \n", currentThread->getName());
-		
-	currentThread->descriptores->Append(file);
-		
-	while ((fileTemp = currentThread->descriptores->Remove()) != file){
-		tempList->Append(fileTemp);
+	int i =	 3;		
+	while (currentThread->descriptores[i])		//mientras haya algo
 		i++;
-	}
-	tempList->Append(fileTemp);
-
-	//vuelvo a llenar la lista de descriptores
-	while(!tempList->IsEmpty()){
-		fileTemp = tempList->Remove();
-		currentThread->descriptores->Append(fileTemp);
-	}
+	currentThread->descriptores[i]= file;
+	
 	return i;
 }
+
 
 void
 ExceptionHandler(ExceptionType which)
@@ -155,8 +143,7 @@ ExceptionHandler(ExceptionType which)
 					char *buffer;
 					buffer = (char *)malloc(lon * sizeof (char));						
 					int i = 0;
-					if(id == ConsoleOutput)
-					{
+					if(id == ConsoleOutput)	{
 						DEBUG('o', "Writing, initiated by user program.\n");
 						readBuffFromUsr(addr_buff, buffer, lon);
 						
@@ -165,9 +152,7 @@ ExceptionHandler(ExceptionType which)
 							sconsole->writeConsole(buffer[i]);							
 							bytes++;
 						}
-					DEBUG('o', "Bytes escritos: %d\n", bytes);
-					
-					
+						DEBUG('o', "Bytes escritos: %d\n", bytes);					
 					}
 					else{break;}
 					machine->WriteRegister(2,bytes);				
@@ -188,6 +173,24 @@ ExceptionHandler(ExceptionType which)
 				} 
 				id = AssignId(file); 
 				DEBUG('o', "Open, OpenFileId: %d\n", id);
+				machine->WriteRegister(2,id);
+				
+				break;
+			}
+			
+			case SC_Close: {
+				OpenFileId id = machine->ReadRegister(4);
+				
+				OpenFile* file;
+				file = currentThread->descriptores[id];
+				if (file) {	 //si hay algo
+					currentThread->descriptores[id] = NULL;
+					file->~OpenFile();
+					DEBUG('o', "Close, Id %d initiated by user program.\n", id);
+				}
+				else {
+					DEBUG('o', "Close, an error ocurred (OpenFileId %d) \n", id);
+				}  
 				machine->WriteRegister(2,0);
 				
 				break;

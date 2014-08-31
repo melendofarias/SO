@@ -105,7 +105,7 @@ class Thread {
 	
 	int getPriority() {return priority; } 
 	void setPriority(int i) {priority = i;}
-	List<OpenFile*> *descriptores;	 //lista de archivos abiertos y sus descriptores
+	OpenFile* descriptores[100];	 //lista de archivos abiertos y sus descriptores
 	  
   private:
     // some of the private data for this class is listed above
