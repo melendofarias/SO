@@ -70,7 +70,8 @@ void increaseProgramCounter() {
  */
 OpenFileId
 AssignId(OpenFile* file){
-	int i =	 3;		
+	int i =	 3;									//se reservan 0,1 y 2 
+												//para consoleInput,Output y errores
 	while (currentThread->descriptores[i])		//mientras haya algo
 		i++;
 	currentThread->descriptores[i]= file;
@@ -159,19 +160,21 @@ ExceptionHandler(ExceptionType which)
 					delete buffer;
 					break;
 			}
+			
 			case SC_Open: {
 				int addr_name = machine->ReadRegister(4);
+				DEBUG('o', "addr_name %d\n", addr_name);
 				char name[64];
 				readStrFromUsr(addr_name, name);
 				OpenFileId id ;
 				OpenFile* file = fileSystem->Open(name); 
 				if (file){
+					id = AssignId(file); 
 					DEBUG('o', "Open, initiated by user program.\n");
 				}
 				else {
 					DEBUG('o', "Open, an error ocurred.\n");
 				} 
-				id = AssignId(file); 
 				DEBUG('o', "Open, OpenFileId: %d\n", id);
 				machine->WriteRegister(2,id);
 				
@@ -180,6 +183,7 @@ ExceptionHandler(ExceptionType which)
 			
 			case SC_Close: {
 				OpenFileId id = machine->ReadRegister(4);
+				DEBUG('o', "Close id------------> %d\n", id);
 				
 				OpenFile* file;
 				file = currentThread->descriptores[id];
@@ -194,7 +198,32 @@ ExceptionHandler(ExceptionType which)
 				machine->WriteRegister(2,0);
 				
 				break;
-			}		 
+			}
+			case SC_Exec: {
+				int addr_name = machine->ReadRegister(4);
+				char name[128];
+				readStrFromUsr(addr_name, name);
+				
+				Thread* execThread = new thread(name);
+				
+				
+				int pid = system->AddProc(execThread);
+				//startProcess ya esta definido en progtest.cc
+				
+				
+				OpenFile* file = fileSystem->Open(name); 
+				if (file){
+					id = AssignId(file); 
+					DEBUG('o', "Open, initiated by user program.\n");
+				}
+				else {
+					DEBUG('o', "Open, an error ocurred.\n");
+				} 
+				DEBUG('o', "Open, OpenFileId: %d\n", id);
+				machine->WriteRegister(2,id);
+				
+				break;
+			}
 		}	
 	}
     else {
