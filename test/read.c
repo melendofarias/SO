@@ -16,7 +16,7 @@ int
 main()
 {
 	char *buff;
-	Read(buff,1024, 0);
+	Read(buff,10, 0);
 	Write("holas",5,1);
 	//Create(buff);
 	return 0;

@@ -81,6 +81,35 @@ AssignId(OpenFile* file){
 
 
 void
+StartProcess(void* name)
+{	
+	DEBUG('o', "Exec StartProcess INIcio %s \n", name);
+    char* filename = (char*)name;
+
+    OpenFile *executable = fileSystem->Open("/home/marisol/code/test/create");
+    AddrSpace *space;
+
+    if (executable == NULL) {
+	printf("Exec: Unable to open file %s\n", filename);
+	return;
+    }
+    	
+    space = new AddrSpace(executable);    
+    currentThread->space = space;
+
+    delete executable;			// close file
+
+    space->InitRegisters();		// set the initial register values
+    space->RestoreState();		// load page table register
+
+    machine->Run();			// jump to the user progam
+    ASSERT(false);			// machine->Run never returns;
+					// the address space exits
+					// by doing the syscall "exit"
+
+}
+
+void
 ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
@@ -97,10 +126,10 @@ ExceptionHandler(ExceptionType which)
 				char name[64];
 				readStrFromUsr(addr_name, name);
 				if (fileSystem->Create(name, 1024)){
-					DEBUG('o', "Create, initiated by user program.\n");
+					DEBUG('o', "Create, initiated by user program: %s.\n", name);
 				}
 				else {
-					DEBUG('o', "Create, an error ocurred.\n");
+					DEBUG('o', "Create, an error ocurred: %s.\n", name);
 				} 
 				machine->WriteRegister(2,0);
 				
@@ -170,10 +199,10 @@ ExceptionHandler(ExceptionType which)
 				OpenFile* file = fileSystem->Open(name); 
 				if (file){
 					id = AssignId(file); 
-					DEBUG('o', "Open, initiated by user program.\n");
+					DEBUG('o', "Open, initiated by user program: %s.\n", name);
 				}
 				else {
-					DEBUG('o', "Open, an error ocurred.\n");
+					DEBUG('o', "Open, an error ocurred: %s.\n", name);
 				} 
 				DEBUG('o', "Open, OpenFileId: %d\n", id);
 				machine->WriteRegister(2,id);
@@ -195,6 +224,7 @@ ExceptionHandler(ExceptionType which)
 				else {
 					DEBUG('o', "Close, an error ocurred (OpenFileId %d) \n", id);
 				}  
+				DEBUG('o', "CURRENTTHREAD %d\n", currentThread);
 				machine->WriteRegister(2,0);
 				
 				break;
@@ -204,23 +234,28 @@ ExceptionHandler(ExceptionType which)
 				char name[128];
 				readStrFromUsr(addr_name, name);
 				
-				Thread* execThread = new thread(name);
 				
+				Thread* execThread = new Thread(name);
 				
-				int pid = system->AddProc(execThread);
+
+				//int pid = system->AddProc(execThread);
+				int* pid1 = (int*) currentThread;
+				int pid = *pid1;
+				
 				//startProcess ya esta definido en progtest.cc
+				DEBUG('o', "Exec name: %s, pid: %d \n", name, pid);
+				char *name1 ;
+				name1 = name;
+				void *arg;
+				arg = name1;
+				execThread->Fork( StartProcess, (void*)arg, 1, 0);
+				 
+				DEBUG('o', "Exec se realiza Fork: %s, pid: %d \n", name, pid);
+				
+				//no retorno hasta que el hijo termina????
 				
 				
-				OpenFile* file = fileSystem->Open(name); 
-				if (file){
-					id = AssignId(file); 
-					DEBUG('o', "Open, initiated by user program.\n");
-				}
-				else {
-					DEBUG('o', "Open, an error ocurred.\n");
-				} 
-				DEBUG('o', "Open, OpenFileId: %d\n", id);
-				machine->WriteRegister(2,id);
+				machine->WriteRegister(2,pid);
 				
 				break;
 			}

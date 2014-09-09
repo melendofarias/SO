@@ -26,14 +26,20 @@ main()
 	
 	Close(id0);
 
-	Create("file2");
-	int id2 = Open("file2");
+	
 
-        int idNOexiste = 9;
-        Close(idNOexiste); 
-        Close(id1);
-        Close(id2);
-
+    int idNOexiste = 9;
+    Close(idNOexiste); 
+    Close(id1);
+    
+    
+    int pid = Exec("/home/marisol/code/test/create");
+    
+    
+	Create("file22");
+	int id2 = Open("file22");
+	Close(id2);
+	
 	return 0;
 	//Halt();
     /* not reached */
