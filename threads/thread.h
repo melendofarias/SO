@@ -139,7 +139,7 @@ class Thread {
 
     AddrSpace *space;			// User code this thread is running.
 	OpenFile* descriptores[100];	 //lista de archivos abiertos y sus descriptores
-
+	int pid;						//identificador de proceso
 #endif
 };
 

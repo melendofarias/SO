@@ -44,6 +44,7 @@ Thread::Thread(const char* threadName)
     priority = 0;
 #ifdef USER_PROGRAM
     space = NULL;
+    pid = 0;
 #endif
 }
 

@@ -15,9 +15,9 @@
 int
 main()
 {
-	char *buff;
-	Read(buff,10, 0);
-	Write("holas",5,1);
+	//char *buff;
+	//Read(buff,10, 0);
+	Write("CCCCC",5,1);
 	//Create(buff);
 	return 0;
 	//Halt();

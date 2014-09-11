@@ -31,6 +31,9 @@ extern Timer *timer;				// the hardware alarm clock
 
 #ifdef USER_PROGRAM
 #include "machine.h"
+
+const int maxCantProcess = 100;
+
 extern Machine* machine;	// user program memory and registers
 #include "SynchConsole.h"
 extern SynchConsole* sconsole;

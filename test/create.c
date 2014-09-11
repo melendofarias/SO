@@ -1,4 +1,4 @@
-/* halt.c
+/* create.c
  *	Simple program to test whether running a user program works.
  *	
  *	Just do a "syscall" that shuts down the OS.
@@ -15,32 +15,8 @@
 int
 main()
 {
-	//char *buff;
-	//Read(buff,5, 0);
-	
-	Create("file0");
-	int id0 = Open("file0");
-	
-	Create("file1");
-	int id1 = Open("file1");
-	
-	Close(id0);
-	
+    Create("HOLA\0");
+	//Write("LLLL\0",5,1);
 
-	int idNOexiste = 9;
-	Close(idNOexiste); 
-	Close(id1);
-    
-    Write("Exces: \n", 8, ConsoleOutput);
-	int pid = Exec("/home/marisol/code/test/create");
-   
-	//int pid2 = Exec("/home/marisol/code/test/read");
-	
-	Create("file22");
-	int id2 = Open("file22");
-	Close(id2);
-	
-	return 0;
-	//Halt();
-    /* not reached */
+    return 0;
 }

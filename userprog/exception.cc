@@ -26,7 +26,6 @@
 #include "syscall.h"
 #include "user.h"
 #include <stdio.h>
-//#include "SynchConsole.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -50,6 +49,11 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
+
+//defino la tabla de procesos
+Thread* processIdTable[maxCantProcess];
+
+
 void increaseProgramCounter() {
 	/*
 	machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg)); // Previous program counter (for debugging)
@@ -83,30 +87,13 @@ AssignId(OpenFile* file){
 void
 StartProcess(void* name)
 {	
-	DEBUG('o', "Exec StartProcess INIcio %s \n", name);
-    char* filename = (char*)name;
-
-    OpenFile *executable = fileSystem->Open("/home/marisol/code/test/create");
-    AddrSpace *space;
-
-    if (executable == NULL) {
-	printf("Exec: Unable to open file %s\n", filename);
-	return;
-    }
-    	
-    space = new AddrSpace(executable);    
-    currentThread->space = space;
-
-    delete executable;			// close file
-
-    space->InitRegisters();		// set the initial register values
-    space->RestoreState();		// load page table register
-
+	currentThread->space->InitRegisters();		// set the initial register values
+    currentThread->space->RestoreState();		// load page table register
+	currentThread->CheckOverflow();
     machine->Run();			// jump to the user progam
     ASSERT(false);			// machine->Run never returns;
 					// the address space exits
 					// by doing the syscall "exit"
-
 }
 
 void
@@ -174,6 +161,7 @@ ExceptionHandler(ExceptionType which)
 					buffer = (char *)malloc(lon * sizeof (char));						
 					int i = 0;
 					if(id == ConsoleOutput)	{
+						
 						DEBUG('o', "Writing, initiated by user program.\n");
 						readBuffFromUsr(addr_buff, buffer, lon);
 						
@@ -231,32 +219,48 @@ ExceptionHandler(ExceptionType which)
 			}
 			case SC_Exec: {
 				int addr_name = machine->ReadRegister(4);
-				char name[128];
-				readStrFromUsr(addr_name, name);
+				char filename[128];
+				readStrFromUsr(addr_name, filename);
 				
 				
-				Thread* execThread = new Thread(name);
 				
+				
+				//abro el archivo a ejecutar
+				OpenFile *executable = fileSystem->Open(filename);
+				AddrSpace *space;
 
-				//int pid = system->AddProc(execThread);
-				int* pid1 = (int*) currentThread;
-				int pid = *pid1;
+				if (executable == NULL) {
+				printf("Exec: Unable to open file %s\n", filename);
+				ASSERT(false);
+				}
 				
-				//startProcess ya esta definido en progtest.cc
-				DEBUG('o', "Exec name: %s, pid: %d \n", name, pid);
-				char *name1 ;
-				name1 = name;
-				void *arg;
-				arg = name1;
-				execThread->Fork( StartProcess, (void*)arg, 1, 0);
-				 
-				DEBUG('o', "Exec se realiza Fork: %s, pid: %d \n", name, pid);
+				processIdTable[currentThread->pid]=currentThread;
+				//guardo el nuevo threads en la tabla de procesos
+				//asigno un pid
+				int pid=1;
+				while(processIdTable[pid] != NULL)
+					pid++;
+						
+				if (pid < maxCantProcess){
+					Thread* execThread = new Thread(filename);
+					execThread->pid = pid;
+					processIdTable[pid] = execThread;
+					DEBUG('o', "Exec ---------> pid: %d Current %d \n", pid, currentThread->pid);
 				
-				//no retorno hasta que el hijo termina????
-				
+					//aloco espacio	
+					space = new AddrSpace(executable);    
+					execThread->space = space;
+					
+					//realizo el fork para dejarlo listo a ejecutar
+					execThread->Fork(StartProcess,filename, 0,0 );
+				}
+				else{
+					printf("Exec: Unable to get an Identifier of process(PID): %s\n", filename);
+					ASSERT(false);
+				}
 				
 				machine->WriteRegister(2,pid);
-				
+				DEBUG('o', "Exec ---------> pid: %d Current %d \n", pid, currentThread->pid);
 				break;
 			}
 		}	
