@@ -15,11 +15,10 @@
 int
 main()
 {
-    Create("HOLA\0");
-	Write("LLLL\n",5,1);
+    Create("CHAU\0");
+	Write("22222222222\n",10,1);
 	
-	Exec("/home/marisol/code/test/create1");
-	
+	//Exec("/home/marisol/code/test/read");
 	Exit(0);
 
     return 0;

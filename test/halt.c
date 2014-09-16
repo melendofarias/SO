@@ -12,16 +12,21 @@
 
 #include "syscall.h"
 
+
 int
 main()
 {
 	//char *buff;
 	//Read(buff,5, 0);
 	
+	
 	Create("file0");
 	int id0 = Open("file0");
+	//Write("Exces: \n\0", 8, id0);
 	
-	Create("file1");
+
+	/*
+	Create("file1");	
 	int id1 = Open("file1");
 	
 	Close(id0);
@@ -30,16 +35,19 @@ main()
 	int idNOexiste = 9;
 	Close(idNOexiste); 
 	Close(id1);
-    
-    Write("Exces: \n", 8, ConsoleOutput);
+    */
+    //Write("Exces: \n", 8, ConsoleOutput);
 	int pid = Exec("/home/marisol/code/test/create");
-   
-	//int pid2 = Exec("/home/marisol/code/test/read");
 	
+   	//int pid1 = Exec("/home/marisol/code/test/create");
+	
+	/*
 	Create("file22");
 	int id2 = Open("file22");
 	Close(id2);
+	*/
 	
+	Exit(0);
 	return 0;
 	//Halt();
     /* not reached */

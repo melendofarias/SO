@@ -15,11 +15,9 @@
 int
 main()
 {
-	//char *buff;
-	//Read(buff,10, 0);
-	Write("CCCCC",5,1);
-	//Create(buff);
-	return 0;
-	//Halt();
-    /* not reached */
+    Create("CHAU\0");
+	
+	//Exit(0);
+
+    return 0;
 }

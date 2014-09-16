@@ -53,6 +53,9 @@
 //defino la tabla de procesos
 Thread* processIdTable[maxCantProcess];
 
+//defino una variable que controle la 
+//cantidad de procesos actuales en el sistema
+int cantProcesses=1;		//siempre está corriendo un main principal
 
 void increaseProgramCounter() {
 	/*
@@ -86,10 +89,12 @@ AssignId(OpenFile* file){
 
 void
 StartProcess(void* name)
-{	
+{
+	DEBUG('o', "StartProcess..currentThread %d pid %d\n", currentThread, currentThread->pid);
 	currentThread->space->InitRegisters();		// set the initial register values
     currentThread->space->RestoreState();		// load page table register
 	currentThread->CheckOverflow();
+    
     machine->Run();			// jump to the user progam
     ASSERT(false);			// machine->Run never returns;
 					// the address space exits
@@ -97,14 +102,48 @@ StartProcess(void* name)
 }
 
 void
+do_Exec(int pid, OpenFile* executable, char* filename){
+	Thread* execThread = new Thread(filename);
+	execThread->pid = pid;
+	processIdTable[pid] = execThread;
+	DEBUG('o', "Exec ---------> pid: %d Current %d filename: %s \n", pid, currentThread->pid, filename);
+		
+	//aloco espacio	
+	AddrSpace* space = new AddrSpace(executable);    
+	execThread->space = space;
+	delete executable;
+
+	cantProcesses++;
+
+	//realizo el fork para dejarlo listo a ejecutar
+	execThread->Fork(StartProcess,filename, 0,0);
+	
+}
+
+void
 ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
-
+DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
     if (which == SyscallException){
 		switch (type) {
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
+				int i, j;
+				for(i=0; i<maxCantProcess; i++){				
+					for(j=0; j<MAX_OPEN_FILES; j++)
+						delete processIdTable[i];
+					
+					if (processIdTable[i] != currentThread and processIdTable[i] != NULL)
+						delete processIdTable[i];	//borro el thread
+						
+					processIdTable[i] = NULL;	//limpio la tabla
+				}		
+				if(currentThread->space != NULL){
+					delete currentThread->space;
+					currentThread->space = NULL;
+				}
+				
 				interrupt->Halt();
 				break;
 			}
@@ -152,30 +191,46 @@ ExceptionHandler(ExceptionType which)
 				break;
 			}
 			case SC_Write: {
-					int addr_buff = machine->ReadRegister(4);
-					int lon = machine->ReadRegister(5);
-					OpenFileId id = machine->ReadRegister(6);
+				int addr_buff = machine->ReadRegister(4);
+				int lon = machine->ReadRegister(5);
+				OpenFileId id = machine->ReadRegister(6);
 					
-					int bytes=0;
-					char *buffer;
-					buffer = (char *)malloc(lon * sizeof (char));						
-					int i = 0;
-					if(id == ConsoleOutput)	{
+				int bytes=0;
+				char *buffer;
+				buffer = (char *)malloc(lon * sizeof (char));						
+				int i = 0;
+					
+				readBuffFromUsr(addr_buff, buffer, lon);
+				if(id == ConsoleOutput)	{
 						
-						DEBUG('o', "Writing, initiated by user program.\n");
-						readBuffFromUsr(addr_buff, buffer, lon);
-						
-						for(i=0; i < lon; i++)
-						{
-							sconsole->writeConsole(buffer[i]);							
-							bytes++;
-						}
+					DEBUG('o', "Writing, initiated by user program.\n");
+											
+					for(i=0; i < lon; i++)
+					{
+						sconsole->writeConsole(buffer[i]);							
+						bytes++;
+					}
+					DEBUG('o', "Bytes escritos: %d\n", bytes);					
+				}
+				else{
+					ASSERT(id>=3 and id <= MAX_OPEN_FILES);
+					
+					if (currentThread->descriptores[id]){				
+							
+						bytes=(currentThread->descriptores[id])->Write(buffer,lon);
+								
 						DEBUG('o', "Bytes escritos: %d\n", bytes);					
 					}
-					else{break;}
-					machine->WriteRegister(2,bytes);				
-					delete buffer;
-					break;
+					else{
+						printf("ID de openfile inexistente");
+						ASSERT(false);
+					}
+				}
+				
+					
+				machine->WriteRegister(2,bytes);				
+					
+				break;
 			}
 			
 			case SC_Open: {
@@ -218,22 +273,21 @@ ExceptionHandler(ExceptionType which)
 				break;
 			}
 			case SC_Exec: {
+				
+				DEBUG('o', "------------------------\n SISCALL EXEC currentThread %d \n", currentThread);
 				int addr_name = machine->ReadRegister(4);
 				char filename[128];
 				readStrFromUsr(addr_name, filename);
-				
-				
-				
+
 				
 				//abro el archivo a ejecutar
 				OpenFile *executable = fileSystem->Open(filename);
-				AddrSpace *space;
 
 				if (executable == NULL) {
 				printf("Exec: Unable to open file %s\n", filename);
 				ASSERT(false);
 				}
-				
+
 				processIdTable[currentThread->pid]=currentThread;
 				//guardo el nuevo threads en la tabla de procesos
 				//asigno un pid
@@ -242,17 +296,8 @@ ExceptionHandler(ExceptionType which)
 					pid++;
 						
 				if (pid < maxCantProcess){
-					Thread* execThread = new Thread(filename);
-					execThread->pid = pid;
-					processIdTable[pid] = execThread;
-					DEBUG('o', "Exec ---------> pid: %d Current %d \n", pid, currentThread->pid);
+					do_Exec(pid, executable, filename);
 				
-					//aloco espacio	
-					space = new AddrSpace(executable);    
-					execThread->space = space;
-					
-					//realizo el fork para dejarlo listo a ejecutar
-					execThread->Fork(StartProcess,filename, 0,0 );
 				}
 				else{
 					printf("Exec: Unable to get an Identifier of process(PID): %s\n", filename);
@@ -260,13 +305,51 @@ ExceptionHandler(ExceptionType which)
 				}
 				
 				machine->WriteRegister(2,pid);
-				DEBUG('o', "Exec ---------> pid: %d Current %d \n", pid, currentThread->pid);
+				DEBUG('o', "LASTExec ---------> pid: %d Current %d \n", pid, currentThread->pid);
+				
+				
+				break;
+			}
+			case SC_Join:{
+				int pid = machine->ReadRegister(4);
+				
+				processIdTable[pid]->Join();
+				processIdTable[pid]=NULL;
+				machine->WriteRegister(2, 0);
+				
+				break;
+			}			
+			case SC_Exit: {
+				int estado = machine->ReadRegister(4);
+				cantProcesses--;
+				DEBUG('o', "Exit status: %d ...currentThread %d QUEDAN %d\n", estado, currentThread, cantProcesses);
+				
+				if (estado==0 ) {
+					printf("Exit: el proceso finalizó con normalidad\n");
+				}else{
+					printf("Exit: el proceso finalizó con ERRORES\n");
+				}
+				if (cantProcesses<=0){
+					delete currentThread->space;
+					//currentThread->space = NULL;
+
+					interrupt->Halt();
+				}
+				if((currentThread->space!=NULL)){
+					delete currentThread->space;
+					//currentThread->space = NULL;
+					processIdTable[currentThread->pid]=NULL;
+									
+				}
+				DEBUG('o', "Exit FIN\n");
+								
+				currentThread->Finish();
 				break;
 			}
 		}	
 	}
     else {
-		printf("Unexpected user mode exception %d %d\n", which, type);
+		printf("Unexpected user mode exception %d %d (SyscallException: %d)\n", which, type, SyscallException);
 		ASSERT(false);
     }
     increaseProgramCounter();

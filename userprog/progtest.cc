@@ -75,10 +75,10 @@ ConsoleTest (const char *in, const char *out)
     writeDone = new Semaphore("write done", 0);
     
     for (;;) {
-	readAvail->P();		// wait for character to arrive
-	ch = console->GetChar();
-	console->PutChar(ch);	// echo it!
-	writeDone->P() ;        // wait for write to finish
-	if (ch == 'q') return;  // if q, quit
+		readAvail->P();		// wait for character to arrive
+		ch = console->GetChar();
+		console->PutChar(ch);	// echo it!
+		writeDone->P() ;        // wait for write to finish
+		if (ch == 'q') return;  // if q, quit
     }
 }

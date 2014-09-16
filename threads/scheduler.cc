@@ -60,11 +60,11 @@ Scheduler::~Scheduler()
 void
 Scheduler::ReadyToRun (Thread *thread)
 {
-    DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
+    DEBUG('p', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
     int pi = thread->getPriority();
-    DEBUG('t', "priority,%d\n",pi);
+    DEBUG('p', "priority,%d\n",pi);
     readyListP[pi]->Append(thread);
 }
 
@@ -81,16 +81,15 @@ Scheduler::FindNextToRun()
 {
 	DEBUG('t', "next to run \n");
 	int p = MaxPriority-1;
+	//Print();
 	DEBUG('t', "Priodidad maxima, %d \n", p);
 	while (p > 0 && (readyListP[p])->IsEmpty()){		//Cambiar 3 por Length de readyListP
 	     p--;
-	
-	DEBUG('t', "while \n");
 	}
 	//printf("Next to run %d\n",p);
 /*	if(p == 0)
 	{
-		DEBUG('t', "p == 0 \n");
+		DEBUG('p', "p == 0 \n");
 		return NULL;
 	}
 	else*/		
@@ -120,7 +119,7 @@ Scheduler::Run (Thread *nextThread)
 #ifdef USER_PROGRAM			// ignore until running user programs 
     if (currentThread->space != NULL) {	// if this thread is a user program,
         currentThread->SaveUserState(); // save the user's CPU registers
-	currentThread->space->SaveState();
+		currentThread->space->SaveState();
     }
 #endif
     
@@ -154,7 +153,7 @@ Scheduler::Run (Thread *nextThread)
 #ifdef USER_PROGRAM
     if (currentThread->space != NULL) {		// if there is an address space
         currentThread->RestoreUserState();     // to restore, do it.
-	currentThread->space->RestoreState();
+		currentThread->space->RestoreState();
     }
 #endif
 }

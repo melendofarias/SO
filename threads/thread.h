@@ -58,6 +58,9 @@ const int MachineStateSize = 17;
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
 const int StackSize = 4 * 1024;	// in words
 
+//cantidad maxima de archivos abiertos por thread
+const int MAX_OPEN_FILES =100;
+
 
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
@@ -138,7 +141,7 @@ class Thread {
     void RestoreUserState();		// restore user-level register state
 
     AddrSpace *space;			// User code this thread is running.
-	OpenFile* descriptores[100];	 //lista de archivos abiertos y sus descriptores
+	OpenFile* descriptores[MAX_OPEN_FILES];	 //lista de archivos abiertos y sus descriptores
 	int pid;						//identificador de proceso
 #endif
 };

@@ -192,7 +192,8 @@ void
 List<Item>::Apply(void (*func)(Item))
 {
     for (ListNode *ptr = first; ptr != NULL; ptr = ptr->next) {
-       func(ptr->item);
+       func(ptr->item); 
+       DEBUG('p', "CURRENTTHREAD: %d\n", ptr->item);
     }
 }
 
