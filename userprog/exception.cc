@@ -93,7 +93,7 @@ StartProcess(void* name)
 	DEBUG('o', "StartProcess..currentThread %d pid %d\n", currentThread, currentThread->pid);
 	currentThread->space->InitRegisters();		// set the initial register values
     currentThread->space->RestoreState();		// load page table register
-	currentThread->CheckOverflow();
+	//currentThread->CheckOverflow();
     
     machine->Run();			// jump to the user progam
     ASSERT(false);			// machine->Run never returns;
@@ -116,7 +116,7 @@ do_Exec(int pid, OpenFile* executable, char* filename){
 	cantProcesses++;
 
 	//realizo el fork para dejarlo listo a ejecutar
-	execThread->Fork(StartProcess,filename, 0,0);
+	execThread->Fork(StartProcess,(void *)executable, 0,0);
 	
 }
 
@@ -124,8 +124,9 @@ void
 ExceptionHandler(ExceptionType which)
 {
     int type = machine->ReadRegister(2);
-DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
-    if (which == SyscallException){
+//DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
+    if (which == SyscallException)
+    {
 		switch (type) {
 			case SC_Halt: {
 				DEBUG('a', "Shutdown, initiated by user program.\n");
@@ -153,6 +154,7 @@ DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
 				readStrFromUsr(addr_name, name);
 				if (fileSystem->Create(name, 1024)){
 					DEBUG('o', "Create, initiated by user program: %s.\n", name);
+					DEBUG('o', "------------------------\n SISCALL CREATE currentThread %d \n", currentThread);
 				}
 				else {
 					DEBUG('o', "Create, an error ocurred: %s.\n", name);
@@ -185,7 +187,22 @@ DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
 					writeBuffToUsr(buffer,addr_buff, bytes);
 					
 				}
-				else{break;}
+				else{
+						ASSERT(id>=3 and id <= MAX_OPEN_FILES);
+					
+					if (currentThread->descriptores[id]){				
+					  
+						DEBUG('o', "Bytes leidos: %d %s\n", bytes, buffer);	
+						bytes=(currentThread->descriptores[id])->Read(buffer,lon);
+								
+						DEBUG('o', "Bytes leidos: %d %s\n", bytes, buffer);					
+					}
+					else{
+						printf("ID de openfile inexistente");
+						ASSERT(false);
+						}
+				
+					}
 				machine->WriteRegister(2,bytes);				
 				delete buffer;
 				break;
@@ -296,6 +313,7 @@ DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
 					pid++;
 						
 				if (pid < maxCantProcess){
+					machine->WriteRegister(2,pid);
 					do_Exec(pid, executable, filename);
 				
 				}
@@ -304,7 +322,7 @@ DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
 					ASSERT(false);
 				}
 				
-				machine->WriteRegister(2,pid);
+				
 				DEBUG('o', "LASTExec ---------> pid: %d Current %d \n", pid, currentThread->pid);
 				
 				
@@ -352,6 +370,7 @@ DEBUG('o',"entro al exceptionHandler %d\n", currentThread);
 		printf("Unexpected user mode exception %d %d (SyscallException: %d)\n", which, type, SyscallException);
 		ASSERT(false);
     }
+    DEBUG('o', "\n\nProgramCounteer\n\n");
     increaseProgramCounter();
 }
 
