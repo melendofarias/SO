@@ -60,7 +60,7 @@ SwapHeader (NoffHeader *noffH)
 AddrSpace::AddrSpace(OpenFile *executable)
 {
     NoffHeader noffH;
-    unsigned int i, size;
+    unsigned int i,j, size;
 
 	
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
@@ -89,6 +89,8 @@ AddrSpace::AddrSpace(OpenFile *executable)
     for (i = 0; i < numPages; i++) {
 		pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 		pageTable[i].physicalPage = myBitmap->Find();
+		//bzero(machine->mainMemory+(pageTable[i].physicalPage)*PageSize, PageSize);
+
 		pageTable[i].valid = true;
 		pageTable[i].use = false;
 		pageTable[i].dirty = false;
@@ -96,7 +98,34 @@ AddrSpace::AddrSpace(OpenFile *executable)
 					// a separate page, we could set its 
 					// pages to be read-only
     }
-    
+
+	if (noffH.code.size > 0){
+		//j = noffH.code.virtualAddr;
+		j = divRoundUp(noffH.code.virtualAddr, PageSize);
+		for (i = 0; i <= noffH.code.size ; i=i+PageSize ){
+			DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
+				noffH.code.virtualAddr+1, noffH.code.size);
+			executable->ReadAt(&(machine->mainMemory[pageTable[j].physicalPage * PageSize]),
+				PageSize, noffH.code.inFileAddr+i);
+				//	pageTable[j].readOnly = true; 
+				j++;
+		}
+	}
+	else i=0;
+	if (noffH.initData.size > 0){
+		
+		j = divRoundUp(noffH.initData.virtualAddr, PageSize);
+		for ( ; i < noffH.code.size + noffH.initData.size ;i=i+PageSize ){
+			DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
+				noffH.initData.virtualAddr, noffH.initData.size);
+			executable->ReadAt(&(machine->mainMemory[pageTable[j].physicalPage * PageSize]),
+				PageSize, noffH.code.inFileAddr+i);
+			j++;
+		}
+	}
+
+
+/*    
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
     bzero(machine->mainMemory, size);
@@ -107,7 +136,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			noffH.code.virtualAddr, noffH.code.size);
        /* executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
 			noffH.code.size, noffH.code.inFileAddr);*/ //reemplazada por InitPages
-		InitPages(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr);
+/*		InitPages(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr);
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
@@ -115,7 +144,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
         executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
-
+*/
 }
 
 
@@ -136,7 +165,8 @@ void AddrSpace::InitPages(OpenFile* file, int memAddr, int size,  int fileAddr){
 
 AddrSpace::~AddrSpace()
 {
-   delete pageTable;
+	CleanMyBitmap();
+	delete pageTable;
 }
 
 //----------------------------------------------------------------------

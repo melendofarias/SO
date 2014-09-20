@@ -91,9 +91,11 @@ void
 StartProcess(void* name)
 {
 	DEBUG('o', "StartProcess..currentThread %d pid %d\n", currentThread, currentThread->pid);
+	
 	currentThread->space->InitRegisters();		// set the initial register values
+    
     currentThread->space->RestoreState();		// load page table register
-	//currentThread->CheckOverflow();
+	currentThread->CheckOverflow();
     
     machine->Run();			// jump to the user progam
     ASSERT(false);			// machine->Run never returns;
@@ -236,7 +238,7 @@ ExceptionHandler(ExceptionType which)
 							
 						bytes=(currentThread->descriptores[id])->Write(buffer,lon);
 								
-						DEBUG('o', "Bytes escritos: %d\n", bytes);					
+						DEBUG('o', "Bytes escritos a archivo!: %d\n", bytes);					
 					}
 					else{
 						printf("ID de openfile inexistente");
@@ -347,17 +349,15 @@ ExceptionHandler(ExceptionType which)
 				}else{
 					printf("Exit: el proceso finalizó con ERRORES\n");
 				}
+				
+				
 				if (cantProcesses<=0){
-					delete currentThread->space;
-					//currentThread->space = NULL;
-
-					interrupt->Halt();
-				}
+						interrupt->Halt();
+					}
 				if((currentThread->space!=NULL)){
 					delete currentThread->space;
-					//currentThread->space = NULL;
-					processIdTable[currentThread->pid]=NULL;
-									
+					currentThread->space = NULL;
+					processIdTable[currentThread->pid]=NULL;														
 				}
 				DEBUG('o', "Exit FIN\n");
 								
@@ -370,7 +370,6 @@ ExceptionHandler(ExceptionType which)
 		printf("Unexpected user mode exception %d %d (SyscallException: %d)\n", which, type, SyscallException);
 		ASSERT(false);
     }
-    DEBUG('o', "\n\nProgramCounteer\n\n");
     increaseProgramCounter();
 }
 
