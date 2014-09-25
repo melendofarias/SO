@@ -295,9 +295,25 @@ ExceptionHandler(ExceptionType which)
 				
 				DEBUG('o', "------------------------\n SISCALL EXEC currentThread %d \n", currentThread);
 				int addr_name = machine->ReadRegister(4);
+				int argc = machine->ReadRegister(5);
+				int addr_argv = machine->ReadRegister(6);
+				
 				char filename[128];
 				readStrFromUsr(addr_name, filename);
+				
+				char argumento[argc][128];
+				int i;
+				int value = 1;
+				int tam = 0;
+				for (i=0; i<argc ; i++){
+					//machine->ReadMem( addr_argv +i*4, 4, &value);
 
+					readStrFromUsr(addr_argv + tam*4, argumento[i]);
+					tam = tam + strlen(argumento[i]);
+					DEBUG('q', "argc %d argumento %s value %d  tam %d\n", argc, argumento[i], value, tam);
+				}
+				
+				
 				
 				//abro el archivo a ejecutar
 				OpenFile *executable = fileSystem->Open(filename);
