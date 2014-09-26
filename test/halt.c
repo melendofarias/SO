@@ -38,13 +38,14 @@ main()
     */
     //Write("Exces: \n", 8, ConsoleOutput);
     
-    int argc = 2;
-    char** argv = (char**) malloc (sizeof(char)*40*5);
+    int argc = 3;
+    char** argv;
+
     argv[0] ="argv0\0";
     argv[1] ="argv1\0";
     
-    char* argv1 = "argv1111 argv2 argv3\0";
-	int pid = Exec("/home/marisol/code/test/create", argc, argv);
+    char** argv1 = "argv1111 argv2 argv3\0";
+	int pid = Exec("/home/marisol/code/test/create", argc, argv1);
 	
    	//int pid1 = Exec("/home/marisol/code/test/create");
 	

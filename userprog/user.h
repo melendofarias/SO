@@ -2,6 +2,8 @@
 #include "system.h"
 
 void readStrFromUsr(int usrAddr, char *outStr);
+int readStrFromUsrSpecial(int usrAddr, char *outStr, char divide);
+
 
 void readBuffFromUsr(int usrAddr, char *outBuff, int byteCount);
 

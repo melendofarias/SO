@@ -104,7 +104,7 @@ StartProcess(void* name)
 }
 
 void
-do_Exec(int pid, OpenFile* executable, char* filename){
+do_Exec(int pid, OpenFile* executable, char* filename, char** argumentos){
 	Thread* execThread = new Thread(filename);
 	execThread->pid = pid;
 	processIdTable[pid] = execThread;
@@ -114,7 +114,7 @@ do_Exec(int pid, OpenFile* executable, char* filename){
 	AddrSpace* space = new AddrSpace(executable);    
 	execThread->space = space;
 	delete executable;
-
+	
 	cantProcesses++;
 
 	//realizo el fork para dejarlo listo a ejecutar
@@ -301,16 +301,13 @@ ExceptionHandler(ExceptionType which)
 				char filename[128];
 				readStrFromUsr(addr_name, filename);
 				
-				char argumento[argc][128];
+				char argumentos[argc][128];
 				int i;
-				int value = 1;
-				int tam = 0;
+				
+				int nextAddr = addr_argv;				
 				for (i=0; i<argc ; i++){
-					//machine->ReadMem( addr_argv +i*4, 4, &value);
-
-					readStrFromUsr(addr_argv + tam*4, argumento[i]);
-					tam = tam + strlen(argumento[i]);
-					DEBUG('q', "argc %d argumento %s value %d  tam %d\n", argc, argumento[i], value, tam);
+					nextAddr = readStrFromUsrSpecial(nextAddr, argumentos[i],' ');	
+					DEBUG('q', "argc %d argumento %s \n", argc, argumentos[i]);
 				}
 				
 				
@@ -332,7 +329,7 @@ ExceptionHandler(ExceptionType which)
 						
 				if (pid < maxCantProcess){
 					machine->WriteRegister(2,pid);
-					do_Exec(pid, executable, filename);
+					do_Exec(pid, executable, filename, argumentos);
 				
 				}
 				else{

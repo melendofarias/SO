@@ -13,12 +13,12 @@
 #include "syscall.h"
 
 int
-main()
+main(char* arg1, char* arg2)
 {
     Create("HOLA\0");
 	Write("LLLL\n",5,1);
-	
-	Exec("/home/marisol/code/test/create1");
+	Write(arg1, 10, 1);
+	//Exec("/home/marisol/code/test/create1");
 	
 	Exit(0);
 
